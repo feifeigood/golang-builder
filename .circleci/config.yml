@@ -1,0 +1,81 @@
+---
+version: 2.1
+
+executors:
+  golang:
+    docker:
+      - image: cimg/go:1.17
+
+jobs:
+  build:
+    executor: golang
+
+    parameters:
+      version:
+        type: string
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: docker info
+      - run: make VARIANTS=base VERSION=<< parameters.version >>
+      - run: make VARIANTS=main VERSION=<< parameters.version >>
+      - run: docker images
+      - run: ls -l docker-images
+      - persist_to_workspace:
+          root: .
+          paths:
+            - docker-images
+
+  publish:
+    executor: golang
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - attach_workspace:
+          at: .
+      - run: for i in docker-images/*; do docker load -i "$i" ; done
+      - run: docker images
+      - run: make tag
+      - run: docker login -u $FEIFEIGOOD_LOGIN -p $FEIFEIGOOD_PASSWORD
+      - run: make push
+
+  bump_version:
+    executor: golang
+
+    steps:
+      - checkout
+      - run: ./scripts/bump_version.sh
+
+workflows:
+  version: 2
+  golang-builder:
+    jobs:
+      - build:
+          matrix:
+            parameters:
+              version:
+                - "1.16"
+                - "1.17"
+          filters:
+            tags:
+              only: /.*/
+      - publish:
+          context: org-context
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+  nightly:
+    triggers:
+      - schedule:
+          cron: "11 12 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - bump_version:
+          context: org-context
