@@ -24,7 +24,7 @@ RUN \
     crossbuild-essential-s390x linux-libc-dev-s390x-cross \
     && rm -rf /var/lib/apt/lists/*
 
-ARG PROM_OSX_SDK_URL
+ARG MYCLOUD_OSX_SDK_URL
 ENV OSXCROSS_PATH=/usr/osxcross \
     OSXCROSS_REV=da2c3d4ff604458a931b08b3af800c5a454136de \
     SDK_VERSION=11.1 \
@@ -34,7 +34,7 @@ RUN \
     mkdir -p /tmp/osxcross && cd /tmp/osxcross \
     && curl -sSL "https://codeload.github.com/tpoechtrager/osxcross/tar.gz/${OSXCROSS_REV}" \
     | tar -C /tmp/osxcross --strip=1 -xzf - \
-    && curl -sSLo tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz "${PROM_OSX_SDK_URL}/MacOSX${SDK_VERSION}.sdk.tar.xz" \
+    && curl -sSLo tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz "${MYCLOUD_OSX_SDK_URL}/MacOSX${SDK_VERSION}.sdk.tar.xz" \
     && UNATTENDED=yes JOBS=2 ./build.sh \
     && mv target "${OSXCROSS_PATH}" \
     && rm -rf /tmp/osxcross "/usr/osxcross/SDK/MacOSX${SDK_VERSION}.sdk/usr/share/man"
