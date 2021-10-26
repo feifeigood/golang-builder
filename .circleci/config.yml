@@ -67,7 +67,7 @@ workflows:
             - build
           filters:
             branches:
-              only: master
+              only: main
   nightly:
     triggers:
       - schedule:
@@ -75,7 +75,7 @@ workflows:
           filters:
             branches:
               only:
-                - master
+                - main
     jobs:
       - bump_version:
           context: org-context
